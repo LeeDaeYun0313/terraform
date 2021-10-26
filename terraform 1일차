@@ -1,0 +1,102 @@
+aws 사용자가서 액세스 키 만들기 후 엑셀파일 받고
+테라폼 시작전에 cmd에서  aws configure해서 
+엑세스키랑 비밀번호 리전 넣어줘야 terraform이랑 연동됨.
+
+terraform
+
+https://www.terraform.io/downloads.html 다운
+압축풀기 후 디렉토리에 담아서 C에 갖다붙이기.
+
+sysdm.cpl
+고급-환경변수-path-테라폼경로 붙여넣기(C:\terraform)
+이제 cmd에서 terraform 치면 경로 어디서든 terraform.exe 사용 가능.
+
+
+https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_windows_amd64.zip
+바탕화면에 다운받은후 폴더 복사해서 C:\ 에 이름:terraform 폴더 붙여넣기
+그후 C:\Users\user 에서 새 폴더 생성  이름:terraform
+그후 visual studio code 실행하고 
+맨 왼쪽 확장 클릭 후  terraform검색 2번째에 있는 HashiCorp Terraform 설치
+맨 왼쪽 탐색기 클릭 후  TERRAFORM 밑에 100_test 생성하고
+100_test 밑에 01_main.tf 생성
+
+01_main.tf에 아래 코드 붙여넣기
+
+provider "aws" {
+  region = "ap-northeast-2"
+}
+
+resource "aws_vpc" "jcw_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "jcw-vpc"
+  }
+}
+
+ctrl+s 저장 하고
+
+비쥬얼코드 창 맨위에 터미널-> 새터미널 클릭
+\users\user\terraform\100_test 에서
+terraform init
+terraform plan 
+terraform apply 하고 yes 하면
+aws에 vpc 생성 되어있음 오류나면
+월요일날 했던 시크릿코드 잘못 넣은거라서 
+cmd틀어서 aws configure  명렁어 입력후 다시 시크릿코드 입력
+
+
+terraform destroy 는 삭제 
+
+
+provider "aws" {
+  region = "ap-northeast-2"
+}
+
+resource "aws_vpc" "ldy_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "ldy-vpc"
+  }
+}
+
+resource "aws_instance" "ldy_web1" {
+  ami = "ami-0e4a9ad2eb120e054"
+  instance_type = "t2.micro"
+  availability_zone = "ap-northeast-2c"
+  user_data = file("./apache.sh")  //100_test디렉토리에 apache.sh 옮기기 
+/*  user_data =<<-EOF
+               #!/bin/bash
+               sudo su -
+               yum install -y httpd
+               systemctl start httpd
+               EOF
+  */
+  tags = {
+    Name = "ldy-web1"
+  }
+}
+
+ㅡㅡㅡㅡㅡㅡapache.shㅡㅡㅡㅡㅡㅡ
+#!/bin/bash
+sudo su -
+yum install -y expat-devel gcc gcc-c++ wget
+mkdir /web
+cd /web
+wget https://downloads.apache.org/apr/apr-1.7.0.tar.gz
+wget https://downloads.apache.org/apr/apr-util-1.6.1.tar.gz
+wget https://downloads.apache.org/httpd/httpd-2.4.51.tar.gz
+wget https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.gz --no-check-certificate
+tar xvfz apr-1.7.0.tar.gz
+tar xvfz apr-util-1.6.1.tar.gz
+tar xvfz httpd-2.4.51.tar.gz
+tar xvfz pcre-8.45.tar.gz
+cd /web/apr-1.7.0 ; ./configure --prefix=/web/apr ; make && make install
+cd /web/apr-util-1.6.1 ; ./configure --prefix=/web/apr-util --with-apr=/web/apr ; make && make install
+cd /web/pcre-8.45 ; ./configure --prefix=/web/pcre ; make && make install
+cd /web/httpd-2.4.51 ; ./configure --prefix /usr/local/apache2 --with-apr=/web/apr --with-apr-util=/web/apr-util --with-pcre=/web/pcre ; make && make install
+echo "export APACHE=/usr/local/apache2" >> /etc/profile
+echo "export PATH=\$PATH:/\$APACHE/bin" >> /etc/profile
+source /etc/profile
+apachectl start
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
