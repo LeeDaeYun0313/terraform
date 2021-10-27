@@ -1,0 +1,18 @@
+처음 cmd에서 key 생성
+ssh-keygen -m PEM
+
+00_ssh.tf
+resource "aws_key_pair" "ldy_key" {
+    key_name = "tf-key1"
+    public_key = file("../../.ssh/id_rsa.pub")
+}
+#키페어 생성 (테라폼에서 하는법)
+aws ec2 import-key-pair --key-name tf-key2 --public-key-material fileb://C:\Users\user\.ssh\id_rsa.pub (cmd에서 하는법)
+
+
+01.main.tf
+provider "aws" {
+  region = "ap-northeast-2"
+}
+
+
