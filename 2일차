@@ -103,10 +103,10 @@ vi /etc/named.conf
 
 vi /etc/named.rfc1912.zones
 zone "leedaeyun.pw" IN {
-     25         type master;
-     26         file "leedaeyun.pw";
-     27         allow-update { none; };
-     28 };
+              type master;
+              file "leedaeyun.pw";
+              allow-update { none; };
+      };
 추가
 
 cp /var/named/named.localhost  /var/named/leedaeyun.pw  
