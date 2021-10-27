@@ -136,3 +136,43 @@ chmod o+r /var/named/leedaeyun.pw
 systemctl  start named
 
 nslookup 해서 leedaeyun.pw 확인
+
+mkdir /var/www/intra
+mkdir /var/www/blog
+cp /var/www/html/index.html /var/www/intra/
+cp /var/www/html/index.html /var/www/blog/
+vi /var/www/intra/index.html 
+   leedaeyun-intra 로 변경
+
+vi /var/www/blog/index.html
+   leedaeyun.blog 로 변경
+
+vi /etc/httpd/conf/httpd.conf
+ 맨 마지막 줄에
+
+NameVirtualHost *:80
+   
+<VirtualHost *:80>
+	DocumentRoot /var/www/blog
+	ServerName blog.leedaeyun.pw
+	ServerAdmin web.leedaeyun.pw
+</VirtualHost>
+ 
+<VirtualHost *:80>
+	DocumentRoot /var/www/intra
+	ServerName intra.leedaeyun.pw
+	ServerAdmin web.leedaeyun.pw
+</VirtualHost>
+  
+<VirtualHost *:80>
+	DocumentRoot /var/www/html
+	ServerName www.leedaeyun.pw
+	ServerAdmin web.leedaeyun.pw
+</VirtualHost>
+
+추가
+
+firewall-cmd --permanent --add-port=53/udp
+firewall-cmd --permanent --add-port=53/tcp
+firewall-cmd --reload
+
