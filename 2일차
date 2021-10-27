@@ -33,7 +33,7 @@ netstat -natp // 포트 연결 어떻게 되어있는지 확인가능
   
   1.2.4. 인증서 복사
 	# cp ca.crt /etc/pki/tls/certs
-	# c ca.key /etc/pki/tls/private
+	# cp ca.key /etc/pki/tls/private
 
 2. httpd 인증서 설정 추가
  2.1. 기존 설정에 아래 내용 추가
@@ -85,9 +85,54 @@ netstat -natp // 포트 연결 어떻게 되어있는지 확인가능
 	포트 : 943 or 143
 	보안연결 : STARTTLS
 	인증방식 : 암호화된 비밀번호 or 평문비밀번호
-
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 vi /etc/httpd/conf.d/ssl.conf // 59,100,107 수정
 systemctl restart httpd
 firewall-cmd --permanent --add-port=443/tcp
 
+yum install -y bind bind-utils bind-libs
+nslookup
+dig naver.com
+dig naver.com +trace
+vi /etc/named.conf 
 
+12 options {
+13         listen-on port 53 { any; };
+  
+13번째줄 any로 변경
+
+vi /etc/named.rfc1912.zones
+zone "leedaeyun.pw" IN {
+     25         type master;
+     26         file "leedaeyun.pw";
+     27         allow-update { none; };
+     28 };
+추가
+
+cp /var/named/named.localhost  /var/named/leedaeyun.pw  
+vi /var/named/leedaeyun.pw
+
+$TTL 1D
+@       IN SOA  ns1.leedaeyun.pw. web. (
+                                        0       ; serial
+                                        1D      ; refresh
+                                        1H      ; retry
+                                        1W      ; expire
+                                        3H )    ; minimum
+        NS      ns1.leedaeyun.pw.
+        MX 10   mail.leedaeyun.pw.
+
+        A       10.0.0.1
+www     A       10.0.0.1
+ns1     A       10.0.0.1
+mail    A       10.0.0.1
+blog    A       10.0.0.1
+intra   A       10.0.0.1
+
+vi /etc/sysconfig/network-scripts/ifcfg-ens33
+dns1에 10.0.0.1 으로 변경
+systemctl restart network
+chmod o+r /var/named/leedaeyun.pw 
+systemctl  start named
+
+nslookup 해서 leedaeyun.pw 확인
