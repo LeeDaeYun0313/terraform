@@ -1,0 +1,93 @@
+firewall-cmd --get-zones
+systemctl status firewalld
+firewall-cmd --get-default-zone
+firewall-cmd --list-all
+firewall-cmd --permanent --add-port=80/tcp
+firewall-cmd --permanent --add-port=443/tcp
+vi /etc/firewalld/zones/public.xml
+firewall-cmd --reload
+firewall-cmd --list-all
+systemctl start httpd
+systemctl status httpd
+systemctl enable httpd
+
+netstat -natp // 포트 연결 어떻게 되어있는지 확인가능
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+# Linux SSL 적용
+1. openssl 활용한 인증서 생성
+ 1.1. 설치
+	# yum install -y openssl mod_ssl
+  
+ 1.2. 인증서 생성단계
+  1.2.1. 개인키(Private) 만들기
+	# openssl genrsa -out ca.key 2048
+  
+  1.2.2. 인증요청서 만들기
+	# openssl req -new -key ca.key -out ca.csr
+  지역,위치,직업,이메일 등등 기입
+  
+  1.2.3. 인증서 = 개인키 + 인증요청서
+	# openssl x509 -req -days 730 -in ca.csr -signkey ca.key -out ca.crt
+  
+  1.2.4. 인증서 복사
+	# cp ca.crt /etc/pki/tls/certs
+	# ca ca.key /etc/pki/tls/private
+
+2. httpd 인증서 설정 추가
+ 2.1. 기존 설정에 아래 내용 추가
+	# vi /etc/httpd/conf.d/ssl.conf
+	
+	<VirtualHost *:443>		-> VirtualHost 추가 내용
+	SSLEngine on
+	SSLCertificateFile /etc/pki/tls/certs/ca.crt
+	SSLCertificateKeyFile /etc/pki/tls/private/ca.key
+	</VirtualHost>
+
+3. vsftpd 인증서 설정 추가
+ 3.1. 기존 설정에 아래 내용 추가 
+	ssl_enable=YES
+	rsa_cert_file=/etc/pki/tls/certs/ca.crt
+	rsa_private_key_file=/etc/pki/tls/private/ca.key
+	ssl_tlsv1=YES
+	#ssl_sslv2=NO
+	#ssl_sslv3=NO
+
+4. mail
+ 4.1. sendmail
+	# vi /etc/mail/sendmail.mc   기존 메일 설정에 추가
+	define(`confCACERT_PATH', `/etc/pki/tls/certs')dnl
+ 	define(`confCACERT', `/etc/pki/tls/certs/ca.crt')dnl
+ 	define(`confSERVER_CERT', `/etc/pki/tls/certs/ca.crt')dnl
+ 	define(`confSERVER_KEY', `/etc/pki/tls/private/ca.key')dnl
+	dnl define(`confCLIENT_CERT', `/etc/pki/tls/certs/ca.crt')dnl
+	dnl define(`confCLIENT_KEY', `/etc/pki/tls/private/ca.key')dnl
+
+	DAEMON_OPTIONS(`Port=submission, Name=MSA, M=Ea')dnl
+	DAEMON_OPTIONS(`Port=smtps, Name=TLSMTA, M=s')dnl
+
+ 4.2. dovecot
+	# vi /etc/dovecot/conf.d/10-auth.conf
+	disable_plaintext_auth = yes
+
+	# vi /etc/dovecot/conf.d/10-ssl.conf
+	ssl = required
+	ssl_cert = </etc/pki/tls/certs/ca.crt
+	ssl_key = </etc/pki/tls/private/ca.key
+
+ 4.3. client : 썬더버드 설징
+  4.3.1. smtp
+	포트 : 465
+	보안연결 : SSL/TLS
+	인증방식 : 암호화된 비밀번호
+  4.3.2. imap
+	포트 : 943 or 143
+	보안연결 : STARTTLS
+	인증방식 : 암호화된 비밀번호 or 평문비밀번호
+
+vi /etc/httpd/conf.d/ssl.conf // 59,100,107 수정
+systemctl restart httpd
+firewall-cmd --permanent --add-port=443/tcp
+
+
