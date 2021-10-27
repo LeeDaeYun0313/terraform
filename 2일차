@@ -33,7 +33,7 @@ netstat -natp // 포트 연결 어떻게 되어있는지 확인가능
   
   1.2.4. 인증서 복사
 	# cp ca.crt /etc/pki/tls/certs
-	# ca ca.key /etc/pki/tls/private
+	# c ca.key /etc/pki/tls/private
 
 2. httpd 인증서 설정 추가
  2.1. 기존 설정에 아래 내용 추가
