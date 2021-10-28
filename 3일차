@@ -59,5 +59,18 @@ cat /var/lib/jenkins/secrets/initialAdminPassword  //하면 나오는 문자로 
 홈페이지들어가서 플러그인 설치
 
 
+!!도커설치
+yum install -y yum-utils
+yum-config-manager     --add-repo     https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce docker-ce-cli containerd.io
+systemctl start docker
+
+!!도커로 젠킨스 설치
+docker pull jenkins/jenkins:lts
+mkdir jenkins
+docker run -itd -p 60800:8080 -v /root/jenkins:/var/lib/jenkins --name jen1 jenkins/jenkins:lts
+firewall-cmd --permanent --add-port=60800/tcp
+firewall-cmd --reload
+docker exec jen1 cat /var/jenkins_home/secrets/initialAdminPassword  // 해서 젠킨스 에 비번 넣기   10.0.0.1:60800
 
 
