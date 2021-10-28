@@ -1,0 +1,59 @@
+vi /etc/httpd/conf/httpd.conf
+
+<Directory "/var/www/blog>
+        Order   allow,deny
+        Deny from 10.0.0.101
+        Allow from all
+</Directory>
+넣고 httpd재시작하면 10.0.0.101 에서 blog.leedaeyun.pw 사이트 접근 불가능
+
+
+/etc/httpd/conf/httpd.conf 에
+<Directory "/var/www/intra">
+        AllowOverride   AuthConfig
+</Directory>
+적고
+
+
+vi /var/www/intra/.htaccess
+
+AuthName        "Test User Auth"
+AuthType        Basic
+AuthUserFile    /auth/.user
+require user    a b
+
+적기
+
+htpasswd -c /auth/.user a 비번
+htpasswd /auth/.user b 비번
+
+systemctl restart httpd
+
+하면 웹사이트에 유저 비번 눌러야 접속됨
+
+!!젠킨스설치!!
+
+yum install -y java-11-openjdk-devel.x86_64
+readlink -f /etc/alternatives/java
+vi /etc/profile
+
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el7_9.x86_64
+export PATH=$PATH:/$JAVA_HOME/bin/
+적기
+
+wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+yum install -y epel-release
+yum install -y jenkins
+
+vi /etc/sysconfig/jenkins  //젠킨스 설정파일위치
+56번째줄 포트 번호변경 60080으로 변경!
+
+
+
+
+
+
+
+
+
