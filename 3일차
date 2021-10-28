@@ -49,10 +49,14 @@ yum install -y jenkins
 vi /etc/sysconfig/jenkins  //젠킨스 설정파일위치
 56번째줄 포트 번호변경 60080으로 변경!
 
+systemctl start jenkins
 
+firewall-cmd --permanent --add-port=60080/tcp    // aws에서는 안해도됨 방화벽설정
+firewall-cmd --reload
 
+cat /var/lib/jenkins/secrets/initialAdminPassword  //하면 나오는 문자로 젠킨스 접속
 
-
+홈페이지들어가서 플러그인 설치
 
 
 
