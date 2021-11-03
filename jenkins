@@ -1,0 +1,33 @@
+젠킨스에서 test-3 만들고
+빌드하면  
+vi /var/lib/jenkins/workspace/test-3/ 여기에 디렉토리가 만들어진다
+
+vi /var/lib/jenkins/workspace/test-3/docker.sh
+
+#!/bin/bash
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce docker-ce-cli containerd.io
+systemctl start docker
+docker pull httpd
+docker run -itd -p 60888:80 --name h1 httpd
+firewall-cmd --permanent --add-port=60888/tcp
+firewall-cmd --reload
+
+vi /var/lib/jenkins/workspace/test-3/index.html
+
+<html>
+<body>
+<h1>Docker-jenkins-deploy</h1>
+</body>
+</html>
+
+chown jenkins.jenkins /var/lib/jenkins/workspace/test-3/docker.sh
+chown jenkins.jenkins /var/lib/jenkins/workspace/test-3/index.html
+
+젠킨스 build 에서 send files or execute commands over SSH 를 만들어서
+node2에
+Source files 에는 docker.sh
+두번째에 Source files 에는 index.html
+        Exec command 에는 docker cp /source/index.html h1:/usr/local/apache2/htdocs/index.html
+
