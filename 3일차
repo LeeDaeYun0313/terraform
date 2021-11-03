@@ -62,7 +62,7 @@ cat /var/lib/jenkins/secrets/initialAdminPassword  //하면 나오는 문자로 
 !!도커설치
 yum install -y yum-utils
 yum-config-manager     --add-repo     https://download.docker.com/linux/centos/docker-ce.repo
-yum install docker-ce docker-ce-cli containerd.io
+yum install -y docker-ce docker-ce-cli containerd.io
 systemctl start docker
 
 !!도커로 젠킨스 설치
